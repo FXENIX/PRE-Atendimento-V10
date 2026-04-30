@@ -118,7 +118,7 @@ export default function DashboardPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-slate-300">URL do Evolution (opcional)</Label>
+                  <Label className="text-slate-300">URL do Evolution</Label>
                   <Input
                     value={evolutionUrl}
                     onChange={e => setEvolutionUrl(e.target.value)}
@@ -127,7 +127,7 @@ export default function DashboardPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-slate-300">API Key (opcional)</Label>
+                  <Label className="text-slate-300">API Key</Label>
                   <Input
                     value={apiKey}
                     onChange={e => setApiKey(e.target.value)}
