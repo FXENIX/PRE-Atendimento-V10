@@ -1,5 +1,8 @@
 #!/bin/bash
 set -e
 
-# Clean and reinstall root workspace dependencies (Express server)
+# Install root Express server dependencies via npm
 npm install
+
+# Install frontend workspace dependencies via pnpm (artifacts/main-app, etc.)
+pnpm install
