@@ -813,6 +813,49 @@ app.post('/api/admin/test-connection', requireAuth, requireAdmin, async (req, re
 });
 
 
+/* ── Monitor — status em lote de todas as instâncias ────────────────── */
+app.get('/api/monitor', requireAuth, async (req, res) => {
+  const user    = req.user!;
+  const isAdmin = user.role === 'admin';
+  try {
+    const result = await listInstances(
+      isAdmin ? undefined : user.tenantId,
+      isAdmin,
+      isAdmin ? undefined : user.userId,
+    );
+    const checkedAt = new Date().toISOString();
+    const instances = (result.data as Array<Record<string, unknown>>) || [];
+    if (!result.success || !instances.length) {
+      res.json({ success: true, data: [], checkedAt });
+      return;
+    }
+    const settled = await Promise.allSettled(
+      instances.map(async (inst) => {
+        const name = inst.instance_name as string;
+        const meta = (inst.metadata as Record<string, unknown>) || {};
+        const newId = ((meta.create as Record<string, unknown> | undefined)?.data as Record<string, unknown> | undefined)?.id;
+        const oldId = (meta.data as Record<string, unknown> | undefined)?.id;
+        if (!newId && !oldId) return { name, connected: false, orphan: true, checkedAt };
+        const token = extractInstanceToken(meta);
+        try {
+          const st    = await getInstanceStatus(token);
+          const d     = (st.data as Record<string, unknown>) || {};
+          const inner = (d.data as Record<string, unknown>) || {};
+          return { name, connected: inner.LoggedIn === true, orphan: false, checkedAt };
+        } catch {
+          return { name, connected: false, orphan: false, checkedAt };
+        }
+      }),
+    );
+    const data = settled.map(r => r.status === 'fulfilled'
+      ? r.value
+      : { name: '?', connected: false, orphan: false, checkedAt });
+    res.json({ success: true, data, checkedAt });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: (err as Error).message });
+  }
+});
+
 async function start() {
   try {
     await runMigrations();

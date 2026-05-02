@@ -1730,6 +1730,76 @@
       flex-shrink: 0;
     }
 
+    /* ─── MONITOR PANEL ─── */
+    .monitor-header {
+      padding: 1rem 1rem 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .monitor-header-left .inst-page-title { font-size: 1.25rem; font-weight: 800; color: var(--tx1); }
+    .monitor-header-left .inst-page-desc  { font-size: 0.78rem; color: var(--tx4); margin-top: 2px; }
+    .monitor-header-right { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+
+    .monitor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 0.85rem;
+    }
+    @media (max-width: 480px) { .monitor-grid { grid-template-columns: 1fr; } }
+
+    .monitor-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      transition: border-color 0.2s;
+    }
+    .monitor-card.healthy { border-left: 3px solid #22c55e; }
+    .monitor-card.failure { border-left: 3px solid #ef4444; }
+    .monitor-card.unknown { border-left: 3px solid #94a3b8; }
+
+    .monitor-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .monitor-name {
+      font-size: 0.92rem; font-weight: 700; color: var(--tx1);
+      min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .monitor-badge {
+      font-size: 0.68rem; font-weight: 700; padding: 2px 8px;
+      border-radius: 6px; text-transform: uppercase; letter-spacing: 0.04em;
+      display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+    }
+    .monitor-badge.healthy { background: #dcfce7; color: #15803d; }
+    .monitor-badge.failure { background: #fef2f2; color: #dc2626; }
+    .monitor-badge.unknown { background: #f1f5f9; color: #64748b; }
+    .monitor-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    }
+    .monitor-dot.healthy { background: #22c55e; }
+    .monitor-dot.failure { background: #ef4444; }
+    .monitor-dot.unknown { background: #94a3b8; }
+
+    .monitor-meta {
+      font-size: 0.72rem; color: var(--tx4);
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .monitor-meta-row { display: flex; align-items: center; gap: 5px; }
+    .monitor-checked-at {
+      text-align: center; padding: 0.5rem 1rem 1.5rem;
+      font-size: 0.71rem; color: var(--tx5);
+    }
+
     .empty-state {
       text-align: center;
       color: var(--tx5);
@@ -1927,6 +1997,10 @@
     [data-theme="dark"] .btn-icon-card.settings:hover { background: var(--surface); color: var(--tx2); }
     [data-theme="dark"] .btn-icon-card.danger    { color: #f87171; }
     [data-theme="dark"] .btn-icon-card.danger:hover  { background: rgba(248,113,113,0.1); color: #fca5a5; }
+    [data-theme="dark"] .monitor-badge.healthy { background: #052e16; color: #4ade80; }
+    [data-theme="dark"] .monitor-badge.failure { background: #1e0a0a; color: #f87171; }
+    [data-theme="dark"] .monitor-badge.unknown { background: var(--surface); color: var(--tx4); }
+
     [data-theme="dark"] .btn-connect             { border-color: #16a34a; color: #4ade80; }
     [data-theme="dark"] .btn-connect:hover       { background: rgba(74,222,128,0.08); }
     [data-theme="dark"] .btn-connect.is-connected { border-color: #d97706; color: #fbbf24; background: rgba(180,83,9,0.12); }
@@ -2310,6 +2384,10 @@
         onclick="showPanel('panel-list', null, 'bnav-list', 'snav-list')">
         Instâncias
       </button>
+      <button class="sidebar-nav-item" id="snav-monitor"
+        onclick="showPanel('panel-monitor', null, 'bnav-monitor', 'snav-monitor')">
+        Monitor
+      </button>
       <button class="sidebar-nav-item admin-only" id="snav-users"
         onclick="showPanel('panel-users', null, 'bnav-users', 'snav-users')">
         Usuários
@@ -2365,6 +2443,10 @@
       <button class="drawer-nav-item" id="dnav-list"
         onclick="showPanel('panel-list', null, 'bnav-list', 'snav-list'); closeDrawer()">
         Instâncias
+      </button>
+      <button class="drawer-nav-item" id="dnav-monitor"
+        onclick="showPanel('panel-monitor', null, 'bnav-monitor', 'snav-monitor'); closeDrawer()">
+        Monitor
       </button>
       <button class="drawer-nav-item admin-only" id="dnav-users"
         onclick="showPanel('panel-users', null, 'bnav-users', 'snav-users'); closeDrawer()">
@@ -2576,6 +2658,24 @@
         </div>
       </div>
 
+      <!-- ── MONITOR ── -->
+      <div class="panel" id="panel-monitor">
+        <div class="monitor-header">
+          <div class="monitor-header-left">
+            <div class="inst-page-title">Monitor</div>
+            <div class="inst-page-desc">Status em tempo real · atualiza a cada 15s</div>
+          </div>
+          <div class="monitor-header-right">
+            <span class="poll-countdown" id="monitor-countdown"></span>
+            <button class="btn-refresh" onclick="loadMonitor()">↻</button>
+          </div>
+        </div>
+        <div class="monitor-grid" id="monitor-grid">
+          <div class="empty-state"><div class="empty-icon">🔄</div>Carregando...</div>
+        </div>
+        <div class="monitor-checked-at" id="monitor-checked-at"></div>
+      </div>
+
       <!-- ── CONFIGURAÇÕES DA INSTÂNCIA (SPA sub-view) ── -->
       <div class="panel" id="panel-instance">
 
@@ -2752,6 +2852,10 @@
         onclick="showPanel('panel-list', null, 'bnav-list')">
         <span class="bottom-nav-icon">📋</span>Instâncias
       </div>
+      <div class="bottom-nav-item" id="bnav-monitor"
+        onclick="showPanel('panel-monitor', null, 'bnav-monitor')">
+        <span class="bottom-nav-icon">📡</span>Monitor
+      </div>
       <div class="bottom-nav-item admin-only" id="bnav-users"
         onclick="showPanel('panel-users', null, 'bnav-users')">
         <span class="bottom-nav-icon">👥</span>Usuários
@@ -2919,9 +3023,9 @@
     }
 
     /* ─── NAV ─── */
-    const panelToSnav = { 'panel-create':'snav-create','panel-list':'snav-list','panel-users':'snav-users','panel-config':'snav-config' };
-    const panelToDnav = { 'panel-create':'dnav-create','panel-list':'dnav-list','panel-users':'dnav-users','panel-config':'dnav-config' };
-    const panelToBnav = { 'panel-create':'bnav-create','panel-list':'bnav-list','panel-users':'bnav-users','panel-config':'bnav-config' };
+    const panelToSnav = { 'panel-create':'snav-create','panel-list':'snav-list','panel-monitor':'snav-monitor','panel-users':'snav-users','panel-config':'snav-config' };
+    const panelToDnav = { 'panel-create':'dnav-create','panel-list':'dnav-list','panel-monitor':'dnav-monitor','panel-users':'dnav-users','panel-config':'dnav-config' };
+    const panelToBnav = { 'panel-create':'bnav-create','panel-list':'bnav-list','panel-monitor':'bnav-monitor','panel-users':'bnav-users','panel-config':'bnav-config' };
 
     function showPanel(panelId, tabEl, bnavId, snavId) {
       /* Panels */
@@ -2945,6 +3049,9 @@
 
       if (panelId === 'panel-list') loadInstances();
       else _stopStatusPoll();
+
+      if (panelId === 'panel-monitor') { loadMonitor(); _startMonitorPoll(); }
+      else _stopMonitorPoll();
     }
 
     /* ─── CONFIG ADMIN ─── */
@@ -4242,6 +4349,83 @@
         btn.innerHTML = '➕ Criar Usuário';
       }
     });
+
+    /* ─── MONITOR ─── */
+    let _monitorPollTimer = null;
+    let _monitorCdTimer   = null;
+    let _monitorCdSecs    = 15;
+    const _monitorFails   = {};
+
+    function _updateMonitorCd() {
+      const el = document.getElementById('monitor-countdown');
+      if (el) el.textContent = _monitorCdSecs > 0 ? `Atualiza em ${_monitorCdSecs}s` : 'Atualizando…';
+    }
+
+    async function loadMonitor() {
+      const grid = document.getElementById('monitor-grid');
+      if (!grid) return;
+      try {
+        const r = await fetch('/api/monitor', { headers: getAuthHeaders() });
+        if (r.status === 401) { handle401(await r.json()); return; }
+        const j = await r.json();
+
+        const visible = (j.data || []).filter(i => !i.orphan);
+        if (!visible.length) {
+          grid.innerHTML = `<div class="empty-state" style="padding:2rem"><div class="empty-icon">📭</div>Nenhuma instância encontrada.</div>`;
+        } else {
+          grid.innerHTML = visible.map(inst => {
+            const prev  = _monitorFails[inst.name] || 0;
+            const fails = inst.connected ? 0 : prev + 1;
+            _monitorFails[inst.name] = fails;
+            const state = inst.connected ? 'healthy' : 'failure';
+            const label = inst.connected ? 'Healthy' : 'Failure';
+            const t     = j.checkedAt ? new Date(j.checkedAt).toLocaleTimeString('pt-BR') : '—';
+            return `
+              <div class="monitor-card ${state}">
+                <div class="monitor-card-top">
+                  <div class="monitor-name">${inst.name}</div>
+                  <span class="monitor-badge ${state}">
+                    <span class="monitor-dot ${state}"></span>${label}
+                  </span>
+                </div>
+                <div class="monitor-meta">
+                  <div class="monitor-meta-row">🕐 Último check: ${t}</div>
+                  <div class="monitor-meta-row">❌ Falhas recentes: ${fails}</div>
+                </div>
+              </div>`;
+          }).join('');
+        }
+
+        const at = document.getElementById('monitor-checked-at');
+        if (at && j.checkedAt) at.textContent = `Última verificação: ${new Date(j.checkedAt).toLocaleString('pt-BR')}`;
+
+        _monitorCdSecs = 15;
+        _updateMonitorCd();
+      } catch {
+        grid.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Erro ao carregar monitor.</div>`;
+      }
+    }
+
+    function _startMonitorPoll() {
+      clearInterval(_monitorPollTimer);
+      clearInterval(_monitorCdTimer);
+      _monitorCdSecs = 15;
+      _updateMonitorCd();
+      _monitorPollTimer = setInterval(loadMonitor, 15000);
+      _monitorCdTimer   = setInterval(() => {
+        _monitorCdSecs = Math.max(0, _monitorCdSecs - 1);
+        _updateMonitorCd();
+      }, 1000);
+    }
+
+    function _stopMonitorPoll() {
+      clearInterval(_monitorPollTimer);
+      clearInterval(_monitorCdTimer);
+      _monitorPollTimer = null;
+      _monitorCdTimer   = null;
+      const el = document.getElementById('monitor-countdown');
+      if (el) el.textContent = '';
+    }
 
     /* ─── INIT ─── */
     initTheme();

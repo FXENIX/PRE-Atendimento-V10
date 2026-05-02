@@ -1,0 +1,82 @@
+Crie uma área de monitoramento em tempo real das instâncias já conectadas no projeto.
+
+Contexto:
+
+O projeto já possui:
+
+* Dashboard Monitor
+* Aba Projects
+* Aba Numbers
+* Aba Monitoring
+* Aba Alert settings
+* Botão Sync instances
+* Instâncias já conectadas/sincronizadas
+* Health checks 24h
+* Métricas Healthy / Failures
+
+Ignore domínios fixos. Use apenas as conexões/configurações já existentes no projeto.
+
+Objetivo:
+
+Criar uma área dentro do projeto para monitorar em tempo real o status das instâncias conectadas.
+
+Regras obrigatórias:
+
+* Não criar uma nova integração externa
+* Não alterar autenticação
+* Não alterar layout global
+* Não remover funcionalidades existentes
+* Não trocar o fluxo atual de Sync instances
+* Não duplicar cadastro de instâncias
+* Usar as instâncias já existentes/conectadas no projeto
+* Usar endpoints e services já existentes sempre que possível
+
+Ação técnica:
+
+1. Identificar onde o projeto já lista as instâncias conectadas
+2. Identificar onde já faz health check/status das instâncias
+3. Criar/ajustar uma área visual na aba Monitoring ou Dashboard
+4. Exibir cada instância monitorada com:
+
+   * nome da instância
+   * status atual
+   * último check
+   * tempo desde último sucesso
+   * quantidade de falhas recentes
+   * indicador visual verde/vermelho
+5. Atualizar automaticamente em tempo real usando polling seguro
+6. Intervalo sugerido: 10s ou 15s
+7. Não enviar chamadas excessivas para a API
+8. Reutilizar dados do health check existente quando disponível
+
+Comportamento esperado:
+
+* Instância conectada e saudável: verde / Healthy
+* Instância desconectada ou com erro: vermelho / Failure
+* Instância sem dado recente: cinza / Unknown
+* Atualização automática sem reload da página
+
+Backend:
+
+* Criar endpoint somente se não existir algo equivalente
+* Preferir reutilizar health checks já salvos
+* Não expor tokens, API keys ou dados sensíveis no frontend
+* Retornar apenas dados seguros para a interface
+
+Frontend:
+
+* Manter o padrão visual atual do Number Monitor
+* Usar os mesmos cards/tabelas/cores do dashboard atual
+* Não criar design diferente
+* Manter responsivo
+
+Saída obrigatória:
+
+1. Arquivos analisados
+2. Onde as instâncias conectadas são carregadas
+3. Onde o status/health check já existe
+4. Arquivos alterados
+5. Endpoint usado ou criado
+6. Intervalo de atualização aplicado
+7. Como testar com instância conectada
+8. Confirmação que Sync instances continua funcionando
