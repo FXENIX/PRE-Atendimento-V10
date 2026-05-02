@@ -3783,6 +3783,15 @@
                 <span class="inst-card-status-label">Status</span>
                 <span class="inst-card-status-value" id="${svalid}">${orphan ? 'erro' : '···'}</span>
               </div>
+              <div class="inst-card-status">
+                <span class="inst-card-status-label">Provider</span>
+                <span class="inst-card-status-value">${
+                  (() => {
+                    const p = inst.provider || (inst.metadata?.provider === 'evolution-api' ? 'evolution-api' : 'evo-go');
+                    return p === 'evolution-api' ? 'Evolution-API' : 'Evo-Go';
+                  })()
+                }</span>
+              </div>
               ${cardFooter}
             </div>`;
         }).join('');

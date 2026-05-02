@@ -122,6 +122,7 @@ export async function createInstanceAndPersist(
     .insert({
       instance_name: instanceName,
       status:        'active',
+      provider:      'evo-go',
       tenant_id:     tenantId,
       created_by:    createdBy,
       metadata: {
@@ -219,6 +220,7 @@ export async function createEvolutionApiInstanceAndPersist(
     .insert({
       instance_name: instanceName,
       status:        'active',
+      provider:      'evolution-api',
       tenant_id:     tenantId,
       created_by:    createdBy,
       metadata: {
@@ -269,7 +271,7 @@ export async function createEvolutionApiInstanceAndPersist(
 export async function listInstances(tenantId?: string, isAdmin = false, userId?: string) {
   let query = supabaseAdmin
     .from('instances')
-    .select('id, instance_name, status, created_at, updated_at, metadata, tenant_id, created_by')
+    .select('id, instance_name, status, provider, created_at, updated_at, metadata, tenant_id, created_by')
     .order('created_at', { ascending: false });
 
   if (!isAdmin) {

@@ -205,6 +205,21 @@ const SQL_MIGRATIONS: { name: string; sql: string }[] = [
       EXCEPTION WHEN duplicate_object THEN NULL; END $$;
     `,
   },
+  /* ── 010: coluna provider em instances ── */
+  {
+    name: '010_add_provider_to_instances',
+    sql: `
+      ALTER TABLE public.instances
+        ADD COLUMN IF NOT EXISTS provider TEXT NOT NULL DEFAULT 'evo-go';
+
+      UPDATE public.instances
+      SET provider = 'evolution-api'
+      WHERE provider = 'evo-go'
+        AND metadata->>'provider' = 'evolution-api';
+
+      CREATE INDEX IF NOT EXISTS idx_instances_provider ON public.instances (provider);
+    `,
+  },
 ];
 
 export async function runMigrations(): Promise<void> {
