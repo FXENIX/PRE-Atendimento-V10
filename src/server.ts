@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import { runMigrations } from './db/migrate.js';
 import {
   createInstanceAndPersist,
+  createEvolutionApiInstanceAndPersist,
   listInstances,
   disconnectInstanceService,
   logoutInstanceService,
@@ -391,6 +392,50 @@ app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
     const { error } = await supabaseAdmin.from('users').delete().eq('id', id);
     if (error) { res.status(404).json({ success: false, error: error.message }); return; }
     res.json({ success: true, data: { message: 'Usuário removido com sucesso.' } });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: (err as Error).message });
+  }
+});
+
+/* ── Criar instância via Evolution-API ────────────────────────────────── */
+app.post('/api/instances/evolution', requireAuth, async (req, res) => {
+  const { instanceName, evolutionUrl, apiKey, tenantId } = req.body as {
+    instanceName?: string;
+    evolutionUrl?: string;
+    apiKey?:       string;
+    tenantId?:     string;
+  };
+
+  if (!instanceName || typeof instanceName !== 'string' || instanceName.trim() === '') {
+    res.status(400).json({ success: false, error: 'instanceName é obrigatório.' });
+    return;
+  }
+  if (!evolutionUrl || typeof evolutionUrl !== 'string' || evolutionUrl.trim() === '') {
+    res.status(400).json({ success: false, error: 'URL da API Evolution é obrigatória.' });
+    return;
+  }
+  if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
+    res.status(400).json({ success: false, error: 'API Key é obrigatória.' });
+    return;
+  }
+
+  const user = req.user!;
+  const effectiveTenantId = (user.role === 'admin' && tenantId) ? tenantId : (user.tenantId || tenantId || '');
+
+  if (!effectiveTenantId) {
+    res.status(400).json({ success: false, error: 'Tenant não identificado. Faça login novamente.' });
+    return;
+  }
+
+  try {
+    const result = await createEvolutionApiInstanceAndPersist(
+      instanceName.trim(),
+      effectiveTenantId,
+      user.userId,
+      evolutionUrl.trim(),
+      apiKey.trim(),
+    );
+    res.status(result.success ? 201 : (result.error?.includes('já existe') ? 409 : 502)).json(result);
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: (err as Error).message });
   }

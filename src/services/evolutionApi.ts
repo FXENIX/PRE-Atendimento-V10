@@ -15,9 +15,11 @@ export interface EvoApiResponse {
 export async function createInstanceEvolutionApi(
   instanceName: string,
   token?:       string,
+  overrideUrl?: string,
+  overrideKey?: string,
 ): Promise<EvoApiResponse> {
-  const baseUrl = EVO_API_URL;
-  const apiKey  = EVO_API_KEY;
+  const baseUrl = (overrideUrl || EVO_API_URL).replace(/\/$/, '');
+  const apiKey  = overrideKey  || EVO_API_KEY;
 
   if (!baseUrl) return { success: false, error: 'EVOLUTION_API_URL não configurada.' };
   if (!apiKey)  return { success: false, error: 'EVOLUTION_GLOBAL_API_KEY não configurada.' };
@@ -32,7 +34,7 @@ export async function createInstanceEvolutionApi(
     const r = await fetch(url, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': apiKey },
-      body:    JSON.stringify({ name: instanceName, token: token || '' }),
+      body:    JSON.stringify({ instanceName, qrcode: true, integration: 'WHATSAPP-BAILEYS', ...(token ? { token } : {}) }),
       signal:  controller.signal,
     });
     clearTimeout(timeout);

@@ -964,6 +964,36 @@
       margin-bottom: 0.5rem;
     }
 
+    /* ── Sub-tabs Criar Instância ── */
+    .api-tabs {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.28rem;
+    }
+    .api-tab {
+      flex: 1;
+      padding: 0.52rem 0.75rem;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--tx3);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s;
+      text-align: center;
+    }
+    .api-tab.active {
+      background: var(--surface);
+      color: var(--tx1);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+    }
+    .api-tab:hover:not(.active) { color: var(--tx2); }
+
     .token-row {
       display: flex;
       align-items: center;
@@ -2398,71 +2428,163 @@
               <div class="card-desc">Cria e registra no Pre-Atendimento</div>
             </div>
           </div>
-          <form id="form-instance" novalidate>
 
-            <div class="fields-row">
-              <div>
-                <label for="instanceName">Nome da Instância <span style="color:#ef4444">*</span></label>
-                <div class="field-wrap">
-                  <input type="text" id="instanceName"
-                    placeholder="ex: minha-loja-01"
-                    autocomplete="off" autocorrect="off"
-                    autocapitalize="none" spellcheck="false" required />
-                  <span class="field-dot" id="dot-name"></span>
-                </div>
-              </div>
-              <div>
-                <label for="inst-token">Token <span style="color:#64748b;font-weight:400;text-transform:none;letter-spacing:0">(Números ou Letras)</span></label>
-                <div class="field-wrap">
-                  <input type="text" id="inst-token"
-                    placeholder="token personalizado"
-                    autocomplete="off" autocorrect="off"
-                    autocapitalize="none" spellcheck="false" />
-                </div>
-              </div>
-            </div>
-
-            <button type="submit" class="btn" id="btn-instance" disabled>
-              Criar Instância
-            </button>
-          </form>
-
-          <!-- Bloco de token gerado -->
-          <div class="token-block" id="token-block">
-            <div class="token-block-title">✅ Instância criada com sucesso</div>
-            <div class="token-row">
-              <span class="token-label">Instância</span>
-              <span class="token-value" id="tk-name">—</span>
-            </div>
-            <div class="token-row">
-              <span class="token-label">Token</span>
-              <span class="token-value" id="tk-token">—</span>
-              <button class="token-copy" onclick="copyToken()">Copiar</button>
-            </div>
-            <div class="token-row">
-              <span class="token-label">Conexão</span>
-              <span class="token-value" id="tk-connected">—</span>
-            </div>
-            <div class="token-row">
-              <span class="token-label">Criado em</span>
-              <span class="token-value" id="tk-created">—</span>
-            </div>
-
-            <div style="margin-top:0.85rem">
-              <button class="btn-qr-create" id="tk-btn-qr"
-                onclick="_lastCreatedName && openQrModal(_lastCreatedName, _qrCurrentToken)">
-                📷 Pegar QRCode
-              </button>
-            </div>
-
-            <!-- Resposta completa da API -->
-            <details class="raw-resp-details" id="tk-raw-details" style="display:none;margin-top:0.9rem">
-              <summary>🔍 Resposta completa da API</summary>
-              <pre class="raw-resp-pre" id="tk-raw-pre"></pre>
-            </details>
+          <!-- Sub-tabs: escolha do provedor -->
+          <div class="api-tabs">
+            <button class="api-tab active" id="tab-evogo"
+              onclick="switchCreateTab('evogo')">⚡ Evo-Go</button>
+            <button class="api-tab" id="tab-evolution"
+              onclick="switchCreateTab('evolution')">🔗 Evolution-API</button>
           </div>
 
-          <div class="alert" id="result-instance"></div>
+          <!-- ── Pane 1: Evo-Go (original, inalterado) ── -->
+          <div id="create-pane-evogo">
+            <form id="form-instance" novalidate>
+
+              <div class="fields-row">
+                <div>
+                  <label for="instanceName">Nome da Instância <span style="color:#ef4444">*</span></label>
+                  <div class="field-wrap">
+                    <input type="text" id="instanceName"
+                      placeholder="ex: minha-loja-01"
+                      autocomplete="off" autocorrect="off"
+                      autocapitalize="none" spellcheck="false" required />
+                    <span class="field-dot" id="dot-name"></span>
+                  </div>
+                </div>
+                <div>
+                  <label for="inst-token">Token <span style="color:#64748b;font-weight:400;text-transform:none;letter-spacing:0">(Números ou Letras)</span></label>
+                  <div class="field-wrap">
+                    <input type="text" id="inst-token"
+                      placeholder="token personalizado"
+                      autocomplete="off" autocorrect="off"
+                      autocapitalize="none" spellcheck="false" />
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn" id="btn-instance" disabled>
+                Criar Instância
+              </button>
+            </form>
+
+            <!-- Bloco de token gerado (Evo-Go) -->
+            <div class="token-block" id="token-block">
+              <div class="token-block-title">✅ Instância criada com sucesso</div>
+              <div class="token-row">
+                <span class="token-label">Instância</span>
+                <span class="token-value" id="tk-name">—</span>
+              </div>
+              <div class="token-row">
+                <span class="token-label">Token</span>
+                <span class="token-value" id="tk-token">—</span>
+                <button class="token-copy" onclick="copyToken()">Copiar</button>
+              </div>
+              <div class="token-row">
+                <span class="token-label">Conexão</span>
+                <span class="token-value" id="tk-connected">—</span>
+              </div>
+              <div class="token-row">
+                <span class="token-label">Criado em</span>
+                <span class="token-value" id="tk-created">—</span>
+              </div>
+
+              <div style="margin-top:0.85rem">
+                <button class="btn-qr-create" id="tk-btn-qr"
+                  onclick="_lastCreatedName && openQrModal(_lastCreatedName, _qrCurrentToken)">
+                  📷 Pegar QRCode
+                </button>
+              </div>
+
+              <!-- Resposta completa da API -->
+              <details class="raw-resp-details" id="tk-raw-details" style="display:none;margin-top:0.9rem">
+                <summary>🔍 Resposta completa da API</summary>
+                <pre class="raw-resp-pre" id="tk-raw-pre"></pre>
+              </details>
+            </div>
+
+            <div class="alert" id="result-instance"></div>
+          </div>
+
+          <!-- ── Pane 2: Evolution-API ── -->
+          <div id="create-pane-evolution" style="display:none">
+            <form id="form-evolution" novalidate>
+
+              <div class="fields-row">
+                <div>
+                  <label for="evo-instance-name">Nome da Instância <span style="color:#ef4444">*</span></label>
+                  <div class="field-wrap">
+                    <input type="text" id="evo-instance-name"
+                      placeholder="ex: minha-loja-01"
+                      autocomplete="off" autocorrect="off"
+                      autocapitalize="none" spellcheck="false" required />
+                    <span class="field-dot" id="evo-dot-name"></span>
+                  </div>
+                </div>
+                <div>
+                  <label for="evo-api-url">URL da API Evolution <span style="color:#ef4444">*</span></label>
+                  <div class="field-wrap">
+                    <input type="text" id="evo-api-url"
+                      placeholder="https://api.suaevo.com"
+                      autocomplete="off" autocorrect="off"
+                      autocapitalize="none" spellcheck="false" required />
+                    <span class="field-dot" id="evo-dot-url"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="fields-row">
+                <div>
+                  <label for="evo-api-key">GLOBAL_API_KEY <span style="color:#ef4444">*</span></label>
+                  <div class="field-wrap">
+                    <input type="password" id="evo-api-key"
+                      placeholder="Chave global da API"
+                      autocomplete="off" spellcheck="false" required />
+                    <span class="field-dot" id="evo-dot-key"></span>
+                  </div>
+                </div>
+                <div id="evo-tenant-field" style="display:none">
+                  <label for="evo-tenant-id">Tenant / Empresa</label>
+                  <div class="field-wrap">
+                    <input type="text" id="evo-tenant-id"
+                      placeholder="ID do tenant"
+                      autocomplete="off" spellcheck="false" />
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn" id="btn-evolution" disabled>
+                Criar via Evolution-API
+              </button>
+            </form>
+
+            <!-- Bloco de resultado (Evolution-API) -->
+            <div class="token-block" id="evo-token-block">
+              <div class="token-block-title">✅ Instância criada com sucesso</div>
+              <div class="token-row">
+                <span class="token-label">Instância</span>
+                <span class="token-value" id="evo-tk-name">—</span>
+              </div>
+              <div class="token-row">
+                <span class="token-label">Token</span>
+                <span class="token-value" id="evo-tk-token">—</span>
+                <button class="token-copy" onclick="copyEvoToken()">Copiar</button>
+              </div>
+              <div class="token-row">
+                <span class="token-label">Provedor</span>
+                <span class="token-value">Evolution-API</span>
+              </div>
+
+              <!-- Resposta completa da API -->
+              <details class="raw-resp-details" id="evo-raw-details" style="display:none;margin-top:0.9rem">
+                <summary>🔍 Resposta completa da API</summary>
+                <pre class="raw-resp-pre" id="evo-raw-pre"></pre>
+              </details>
+            </div>
+
+            <div class="alert" id="result-evolution"></div>
+          </div>
+
         </div>
       </div>
 
@@ -3154,7 +3276,134 @@
       }).catch(() => {});
     }
 
-    /* ─── CRIAR INSTÂNCIA ─── */
+    /* ─── SUB-TABS: CRIAR INSTÂNCIA ─── */
+    function switchCreateTab(tab) {
+      document.getElementById('create-pane-evogo').style.display    = tab === 'evogo'     ? '' : 'none';
+      document.getElementById('create-pane-evolution').style.display = tab === 'evolution' ? '' : 'none';
+      document.getElementById('tab-evogo').classList.toggle('active',    tab === 'evogo');
+      document.getElementById('tab-evolution').classList.toggle('active', tab === 'evolution');
+      if (tab === 'evolution') {
+        const isAdmin = _currentUser?.role === 'admin';
+        document.getElementById('evo-tenant-field').style.display = isAdmin ? '' : 'none';
+      }
+    }
+
+    /* ─── EVOLUTION-API: VALIDAÇÃO ─── */
+    function isEvoFormValid() {
+      const name = document.getElementById('evo-instance-name').value.trim();
+      const url  = document.getElementById('evo-api-url').value.trim();
+      const key  = document.getElementById('evo-api-key').value.trim();
+      return !!(name && url && key);
+    }
+
+    function onEvoFieldInput() {
+      const name = document.getElementById('evo-instance-name').value.trim();
+      const url  = document.getElementById('evo-api-url').value.trim();
+      const key  = document.getElementById('evo-api-key').value.trim();
+      document.getElementById('evo-dot-name').className = 'field-dot ' + (name ? 'ok' : 'nok');
+      document.getElementById('evo-dot-url').className  = 'field-dot ' + (url  ? 'ok' : 'nok');
+      document.getElementById('evo-dot-key').className  = 'field-dot ' + (key  ? 'ok' : 'nok');
+      document.getElementById('btn-evolution').disabled = !isEvoFormValid();
+    }
+
+    document.getElementById('evo-instance-name').addEventListener('input', onEvoFieldInput);
+    document.getElementById('evo-api-url').addEventListener('input', onEvoFieldInput);
+    document.getElementById('evo-api-key').addEventListener('input', onEvoFieldInput);
+
+    /* ─── EVOLUTION-API: COPY TOKEN ─── */
+    function copyEvoToken() {
+      const token = document.getElementById('evo-tk-token').textContent;
+      if (!token || token === '—') return;
+      navigator.clipboard.writeText(token).then(() => {
+        const btn = document.querySelector('#evo-token-block .token-copy');
+        btn.textContent = 'Copiado!';
+        setTimeout(() => { btn.textContent = 'Copiar'; }, 2000);
+      }).catch(() => {});
+    }
+
+    /* ─── EVOLUTION-API: FORM SUBMIT ─── */
+    document.getElementById('form-evolution').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const instanceName = document.getElementById('evo-instance-name').value.trim();
+      const evolutionUrl = document.getElementById('evo-api-url').value.trim();
+      const apiKey       = document.getElementById('evo-api-key').value.trim();
+      const tenantId     = document.getElementById('evo-tenant-id')?.value?.trim() || undefined;
+      const btn          = document.getElementById('btn-evolution');
+      const alertEl      = document.getElementById('result-evolution');
+
+      if (!instanceName || !evolutionUrl || !apiKey) {
+        alertEl.className = 'alert error';
+        alertEl.textContent = '❌ Preencha todos os campos obrigatórios.';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Criando...';
+      alertEl.className = 'alert';
+      document.getElementById('evo-token-block').classList.remove('visible');
+
+      try {
+        const body = { instanceName, evolutionUrl, apiKey };
+        if (tenantId) body.tenantId = tenantId;
+
+        const res  = await fetch('/api/instances/evolution', {
+          method:  'POST',
+          headers: getAuthHeaders(),
+          body:    JSON.stringify(body),
+        });
+        const json = await res.json();
+
+        console.group('[PRE-Atendimento] Resposta criação Evolution-API');
+        console.log('HTTP status :', res.status);
+        console.log('json        :', json);
+        console.groupEnd();
+
+        if (json.success) {
+          const data       = json.data || {};
+          const createResp = data.create_response || {};
+          const instData   = createResp.instance || createResp.data || createResp || {};
+          const hashData   = createResp.hash || {};
+
+          document.getElementById('evo-tk-name').textContent =
+            instData.instanceName || instData.name || data.instance_name || instanceName;
+
+          document.getElementById('evo-tk-token').textContent =
+            data.instance_token || hashData.apikey || instData.token || instData.apikey || '(não retornado pela API)';
+
+          const rawEl  = document.getElementById('evo-raw-details');
+          const rawPre = document.getElementById('evo-raw-pre');
+          if (rawEl && rawPre) {
+            rawEl.style.display = '';
+            rawPre.textContent  = JSON.stringify(createResp, null, 2);
+          }
+
+          const tb = document.getElementById('evo-token-block');
+          tb.classList.remove('warn');
+          tb.classList.add('visible');
+          tb.querySelector('.token-block-title').textContent = '✅ Instância criada com sucesso';
+          document.getElementById('evo-instance-name').value = '';
+          onEvoFieldInput();
+          tb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+          await loadInstances();
+        } else {
+          alertEl.className = 'alert error';
+          alertEl.innerHTML =
+            `❌ <strong>${json.error || 'Erro desconhecido'}</strong>` +
+            `<pre>${JSON.stringify(json, null, 2)}</pre>`;
+          alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } catch (err) {
+        alertEl.className = 'alert error';
+        alertEl.textContent = `❌ Erro de conexão: ${err.message}`;
+      } finally {
+        btn.disabled = !isEvoFormValid();
+        btn.textContent = 'Criar via Evolution-API';
+      }
+    });
+
+    /* ─── CRIAR INSTÂNCIA (EVO-GO) ─── */
     document.getElementById('form-instance').addEventListener('submit', async (e) => {
       e.preventDefault();
 
