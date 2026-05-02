@@ -3023,10 +3023,13 @@
       return !!document.getElementById('instanceName').value.trim();
     }
 
+    const INST_NAME_RE = /^[a-zA-Z0-9_-]+$/;
+
     function onInstFieldInput() {
-      const val = document.getElementById('instanceName').value.trim();
-      document.getElementById('dot-name').className = 'field-dot ' + (val ? 'ok' : 'nok');
-      document.getElementById('btn-instance').disabled = !val;
+      const val   = document.getElementById('instanceName').value.trim();
+      const valid = !!val && INST_NAME_RE.test(val);
+      document.getElementById('dot-name').className = 'field-dot ' + (valid ? 'ok' : (val ? 'nok' : ''));
+      document.getElementById('btn-instance').disabled = !valid;
     }
 
     document.getElementById('instanceName').addEventListener('input', onInstFieldInput);
@@ -3055,6 +3058,12 @@
       if (!instanceName) {
         alertEl.className = 'alert error';
         alertEl.textContent = '❌ Informe o nome da instância.';
+        return;
+      }
+
+      if (!INST_NAME_RE.test(instanceName)) {
+        alertEl.className = 'alert error';
+        alertEl.textContent = '❌ Nome inválido. Use apenas letras (a-z), números, hífen (-) e underscore (_). Sem espaços ou acentos.';
         return;
       }
 
