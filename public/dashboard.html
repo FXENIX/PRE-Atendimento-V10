@@ -2353,6 +2353,35 @@
       top: calc(100% + 4px);
       right: 1.25rem;
     }
+  /* ── Monitor: alerta de desconexão ── */
+  @keyframes _monFlash { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  #monitor-alert-overlay {
+    display:none; position:fixed; inset:0; z-index:9999; pointer-events:none;
+  }
+  #monitor-alert-overlay.active   { display:block; }
+  #monitor-alert-overlay.flashing { animation:_monFlash 0.8s ease-in-out 3; }
+  #monitor-alert-box {
+    pointer-events:all; position:fixed; bottom:1.5rem; right:1.5rem;
+    background:#1e0a0a; border:1px solid rgba(248,113,113,0.4);
+    border-radius:0.85rem; padding:1rem 1.25rem;
+    box-shadow:0 8px 32px rgba(0,0,0,0.5); max-width:320px; min-width:260px;
+  }
+  #monitor-alert-title {
+    font-weight:700; font-size:0.95rem; color:#f87171;
+    margin-bottom:0.4rem; display:flex; align-items:center; gap:0.4rem;
+  }
+  #monitor-alert-names {
+    font-size:0.8rem; color:#fca5a5; margin-bottom:0.75rem; line-height:1.5;
+  }
+  #monitor-alert-actions { display:flex; gap:0.5rem; }
+  .mon-alert-btn {
+    flex:1; padding:0.4rem 0.75rem; border-radius:0.5rem;
+    border:none; cursor:pointer; font-size:0.8rem; font-weight:600;
+  }
+  .mon-alert-btn.close { background:rgba(248,113,113,0.15); color:#f87171; border:1px solid rgba(248,113,113,0.3); }
+  .mon-alert-btn.mute  { background:rgba(71,85,105,0.3);    color:#94a3b8; border:1px solid rgba(148,163,184,0.2); }
+  .mon-alert-btn.close:hover { background:rgba(248,113,113,0.28); }
+  .mon-alert-btn.mute:hover  { background:rgba(71,85,105,0.5); }
   </style>
 </head>
 <body>
@@ -4410,6 +4439,52 @@
     let _monitorCdSecs    = 120;
     const _monitorFails   = {};
 
+    /* ── Estado anterior por instância (para detectar transições) ── */
+    const _monitorPrevState = {};
+    let   _monAlertShown    = false;
+    let   _monAlertSilenced = false;
+    let   _monHasInteracted = false;
+    document.addEventListener('click', () => { _monHasInteracted = true; }, { once: true });
+
+    function _playMonBeep() {
+      if (_monAlertSilenced || !_monHasInteracted || document.hidden) return;
+      try {
+        const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.45);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.45);
+      } catch { /* browser policy — silencia silenciosamente */ }
+    }
+
+    function _showMonAlert(names) {
+      if (_monAlertSilenced || _monAlertShown) return;
+      _monAlertShown = true;
+      const overlay = document.getElementById('monitor-alert-overlay');
+      document.getElementById('monitor-alert-names').textContent = names.join(', ');
+      overlay.classList.remove('flashing');
+      overlay.classList.add('active');
+      void overlay.offsetWidth;
+      overlay.classList.add('flashing');
+      _playMonBeep();
+    }
+
+    function _closeMonAlert() {
+      _monAlertShown = false;
+      document.getElementById('monitor-alert-overlay').classList.remove('active', 'flashing');
+    }
+
+    function _silenceMonAlert() {
+      _monAlertSilenced = true;
+      _closeMonAlert();
+    }
+
     function _updateMonitorCd() {
       const el = document.getElementById('monitor-countdown');
       if (el) el.textContent = _monitorCdSecs > 0 ? `Atualiza em ${_monitorCdSecs}s` : 'Atualizando…';
@@ -4460,6 +4535,17 @@
                 </div>
               </div>`;
           }).join('');
+
+          /* ── Detecta transição connected → failure e dispara alerta ── */
+          const _nowDisconnected = [];
+          visible.forEach(inst => {
+            const apiStatus = inst.status || (inst.connected ? 'connected' : 'disconnected');
+            const cur  = apiStatus === 'connected' ? 'connected' : 'failure';
+            const prev = _monitorPrevState[inst.name];
+            if (cur !== 'connected' && prev === 'connected') _nowDisconnected.push(inst.name);
+            _monitorPrevState[inst.name] = cur;
+          });
+          if (_nowDisconnected.length) _showMonAlert(_nowDisconnected);
         }
 
         const at = document.getElementById('monitor-checked-at');
@@ -4515,5 +4601,16 @@
     updateAdminConfigUI();
     if (_isAdmin) loadUsers();
   </script>
+<!-- Monitor: popup de alerta de desconexão -->
+<div id="monitor-alert-overlay">
+  <div id="monitor-alert-box">
+    <div id="monitor-alert-title">⚠️ Instância desconectada</div>
+    <div id="monitor-alert-names"></div>
+    <div id="monitor-alert-actions">
+      <button class="mon-alert-btn close" onclick="_closeMonAlert()">Fechar</button>
+      <button class="mon-alert-btn mute"  onclick="_silenceMonAlert()">Silenciar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
