@@ -1,0 +1,106 @@
+```text
+Corrigir envio de e-mail da função "Esqueci minha senha" usando Supabase Auth.
+
+PROBLEMA:
+Usuário solicita reset de senha, frontend mostra mensagem de sucesso, mas o e-mail não é enviado.
+
+OBJETIVO:
+Garantir que o Supabase envie corretamente o e-mail de recuperação de senha.
+
+REGRAS:
+- NÃO alterar layout
+- NÃO criar sistema próprio de e-mail
+- NÃO remover funcionalidades existentes
+- Usar Supabase Auth oficial
+- Backend responsável pela chamada
+- Frontend apenas exibe mensagem genérica (não revelar se o e-mail existe)
+
+IMPLEMENTAÇÃO BACKEND:
+
+1. Garantir uso da chave correta:
+- Usar SUPABASE_SERVICE_ROLE_KEY no backend
+- NÃO usar SUPABASE_ANON_KEY no backend
+
+2. Criar ou corrigir endpoint:
+
+POST /api/auth/forgot-password
+
+Body esperado:
+{
+  "email": "usuario@email.com"
+}
+
+3. Implementação:
+
+- Validar que email foi enviado
+- Usar supabaseAdmin (client com SERVICE_ROLE_KEY)
+
+Código:
+
+await supabaseAdmin.auth.resetPasswordForEmail(email, {
+  redirectTo: `${process.env.PUBLIC_APP_URL}/reset-password.html`
+});
+
+- Sempre retornar resposta genérica:
+
+res.json({
+  success: true,
+  message: "Se este e-mail estiver cadastrado, você receberá o link em instantes. Verifique também a pasta de spam."
+});
+
+- Mesmo se houver erro interno, NÃO expor ao usuário
+
+4. Adicionar logs temporários no backend:
+- Logar quando endpoint é chamado
+- Logar resposta do Supabase (erro ou sucesso)
+
+IMPLEMENTAÇÃO FRONTEND:
+
+- Formulário "Esqueci minha senha" deve chamar:
+POST /api/auth/forgot-password
+
+- Enviar:
+{ email }
+
+- Exibir sempre a mensagem retornada pelo backend
+- NÃO simular sucesso sem chamada real
+
+CONFIGURAÇÃO SUPABASE (OBRIGATÓRIO):
+
+1. Authentication → URL Configuration
+
+Definir:
+
+Site URL:
+https://SEU-DOMINIO.com
+
+Redirect URLs:
+https://SEU-DOMINIO.com/reset-password.html
+
+NÃO usar localhost em produção
+
+2. Authentication → Email Templates
+
+- Garantir que "Reset Password" está habilitado
+
+3. Authentication → SMTP Settings
+
+- Se estiver usando padrão Supabase, verificar limites
+- Preferencial: configurar SMTP próprio (SendGrid, Gmail, etc.)
+
+VALIDAÇÃO FINAL:
+
+- Fazer request manual no endpoint /api/auth/forgot-password
+- Verificar logs do backend
+- Verificar logs em Supabase → Auth Logs
+- Confirmar recebimento do e-mail (ou spam)
+
+NÃO ALTERAR:
+
+- login
+- cadastro
+- dashboard
+- monitor
+- Evolution API
+- controle de instâncias
+```

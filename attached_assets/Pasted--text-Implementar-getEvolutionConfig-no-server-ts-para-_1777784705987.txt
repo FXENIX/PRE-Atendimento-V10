@@ -1,0 +1,100 @@
+```text
+Implementar getEvolutionConfig() no server.ts para suportar multi-tenant real na Evolution API, sem alterar comportamento existente.
+
+REGRAS OBRIGATÓRIAS:
+- NÃO alterar rotas existentes
+- NÃO alterar payloads
+- NÃO alterar frontend
+- NÃO alterar instanceService.ts
+- NÃO alterar evolutionGo.ts
+- NÃO alterar estrutura de resposta
+- NÃO quebrar integração atual
+
+OBJETIVO:
+Substituir totalmente o uso de process.env.EVOLUTION_API_URL e process.env.GLOBAL_API_KEY por configuração dinâmica por tenant, vinda do banco (Supabase).
+
+FONTE DOS DADOS:
+Tabela: public.tenants
+Campos:
+- evolution_api_url
+- evolution_global_api_key
+
+IMPLEMENTAÇÃO:
+
+1. Criar função no backend:
+
+async function getEvolutionConfig(tenantId: string) {
+  const { data, error } = await supabaseAdmin
+    .from('tenants')
+    .select('evolution_api_url, evolution_global_api_key')
+    .eq('id', tenantId)
+    .single();
+
+  if (error || !data) {
+    throw new Error('Configuração da Evolution API não encontrada para o tenant.');
+  }
+
+  return {
+    baseUrl: data.evolution_api_url,
+    apiKey: data.evolution_global_api_key
+  };
+}
+
+2. Resolver tenant corretamente em TODOS endpoints:
+
+const effectiveTenantId =
+  (user.role === 'admin' && tenantId)
+    ? tenantId
+    : (user.tenantId || tenantId);
+
+Se não existir:
+throw new Error('Tenant não identificado.');
+
+3. Substituir em TODOS os pontos que chamam Evolution API:
+
+REMOVER completamente:
+process.env.EVOLUTION_API_URL
+process.env.GLOBAL_API_KEY
+
+SUBSTITUIR por:
+const { baseUrl, apiKey } = await getEvolutionConfig(effectiveTenantId);
+
+4. Aplicar em TODOS endpoints que usam Evolution:
+- criar instância
+- gerar QR Code
+- status
+- reconnect
+- delete instance
+- listar instâncias
+- qualquer proxy para Evolution API
+
+5. Regra de segurança:
+Se tenant não tiver configuração:
+- NÃO chamar Evolution API
+- retornar:
+
+res.status(400).json({
+  success: false,
+  error: 'Tenant sem configuração da Evolution API.'
+});
+
+6. NÃO alterar:
+- login
+- cadastro
+- dashboard
+- monitor
+- controle de instâncias
+- layout
+- outras integrações
+
+VALIDAÇÃO FINAL:
+- Criar 2 tenants com URLs e API keys diferentes
+- Criar instâncias em cada tenant
+- Confirmar que cada tenant usa sua própria Evolution API
+- Confirmar geração de QR Code e logs corretos no evo-go correspondente
+
+RESULTADO ESPERADO:
+- Multi-tenant real funcionando
+- Cada cliente isolado
+- Sem dependência de .env para Evolution API
+```
