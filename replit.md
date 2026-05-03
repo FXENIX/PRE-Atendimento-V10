@@ -1,23 +1,29 @@
-# PRE-Atendimento V9 — Replit Configuration
+# PRE-Atendimento V9 — Replit Execution Rules
 
-## 🚫 REGRAS OBRIGATÓRIAS (AGENT)
+## 🚫 REGRA PRINCIPAL (CRÍTICA)
 
 Este projeto utiliza **EXCLUSIVAMENTE SUPABASE** como banco de dados.
 
-É PROIBIDO:
+QUALQUER tentativa de substituir isso está ERRADA.
+
+---
+
+## ❌ PROIBIDO (SEM EXCEÇÃO)
+
+O Replit Agent NÃO PODE:
 
 - usar Replit Database
 - usar PostgreSQL interno do Replit
-- instalar ou usar módulo `postgresql-16`
+- instalar `postgresql-16`
 - criar banco local (SQLite, Postgres local, etc)
-- migrar dados para qualquer outro provider
-- substituir Supabase por Prisma, Drizzle, Neon ou qualquer outro ORM/provider
+- migrar banco para qualquer outro provider
+- usar Prisma, Drizzle, Neon ou qualquer ORM alternativo
+- criar fallback de banco
 - criar mocks de banco de dados
-- alterar estrutura de persistência existente
+- alterar estrutura de persistência
+- alterar lógica de autenticação existente
 
-Se variáveis do Supabase estiverem ausentes:
-
-➡️ **PARAR execução imediatamente e informar erro claro**
+Se tentar qualquer uma dessas ações → está incorreto.
 
 ---
 
@@ -32,47 +38,55 @@ O backend NÃO deve iniciar sem:
 - SUPABASE_JWT_SECRET
 - GLOBAL_API_KEY
 
-Nunca adicionar valores reais no código ou no repositório.
+### Regra:
+
+Se faltar qualquer variável:
+
+→ PARAR execução  
+→ Mostrar erro claro  
+→ NÃO criar fallback  
+→ NÃO tentar corrigir automaticamente  
 
 ---
 
-## 🧠 ARQUITETURA
+## 🧠 ARQUITETURA (NÃO ALTERAR)
 
 Backend:
 - Node.js + Express + TypeScript
 - Arquivo principal: `src/server.ts`
 
 Frontend:
-- SPA estático servido pelo Express
+- SPA servida pelo Express
 - `public/index.html`
 - `public/dashboard.html`
 
 Banco:
-- Supabase PostgreSQL (via pooler)
+- Supabase PostgreSQL (pooler)
 
-Integração externa:
-- Evolution GO API
+API externa:
+- Evolution GO
 - https://evogo.pre-atendimento.com
 
 ---
 
-## 🔒 SEGURANÇA E ISOLAMENTO
+## 🔒 SEGURANÇA (OBRIGATÓRIO)
 
-Isolamento obrigatório em duas camadas:
+Isolamento em duas camadas:
 
-- `tenant_id` → organização
-- `created_by` → usuário dono
+- `tenant_id`
+- `created_by`
 
 Regras:
 
-- usuário comum → acessa apenas seus próprios dados
+- usuário comum → apenas seus dados
 - admin → acesso total
 
-Filtros aplicados em TODAS as operações:
+Aplicado em:
 
 - listagem
+- criação
 - status
-- QR Code
+- QR code
 - connect
 - disconnect
 - delete
@@ -81,3 +95,113 @@ Filtros aplicados em TODAS as operações:
 ---
 
 ## 🗂 ESTRUTURA DO PROJETO
+
+src/
+  server.ts
+  services/
+    evolutionGo.ts
+    instanceService.ts
+    authService.ts
+    supabase.ts
+  db/
+    migrate.ts
+    migrations/
+
+public/
+  index.html
+  dashboard.html
+
+docs/
+  evolution-go-endpoints.md
+
+---
+
+## ⚙️ EXECUÇÃO
+
+Instalação:
+
+pnpm install
+
+Execução:
+
+pnpm run dev
+
+Porta obrigatória:
+
+PORT=5000
+
+---
+
+## 🚨 COMPORTAMENTO DO AGENT
+
+O Agent deve:
+
+- NÃO alterar layout
+- NÃO alterar frontend
+- NÃO alterar rotas
+- NÃO refatorar código
+- NÃO instalar libs desnecessárias
+- NÃO alterar `.replit`
+- NÃO rodar migrations destrutivas
+- NÃO inventar arquitetura
+
+---
+
+## 🔁 LÓGICA DE STATUS
+
+Valores válidos:
+
+- creating
+- active
+- connected
+- inactive
+- error
+
+Regra:
+
+APENAS `connected` = conectado
+
+---
+
+## 📡 EVOLUTION GO (REGRAS)
+
+- create → usa GLOBAL_API_KEY
+- connect → usa token da instância
+- status → usa token da instância
+- qr → polling
+
+Importante:
+
+- create usa `name`
+- delete usa UUID
+- QR retorna `Qrcode` e `Code`
+
+---
+
+## 🧪 DEBUG
+
+Se houver erro:
+
+NÃO:
+
+- mudar banco
+- criar fallback
+- trocar provider
+- alterar estrutura
+
+FAZER:
+
+1. mostrar erro
+2. indicar variável faltante
+3. aguardar instrução
+
+---
+
+## 🎯 OBJETIVO FINAL
+
+Executar o projeto:
+
+- com Supabase
+- sem alterações estruturais
+- sem substituições automáticas
+- mantendo comportamento original
