@@ -2664,7 +2664,7 @@
         <div class="monitor-header">
           <div class="monitor-header-left">
             <div class="inst-page-title">Monitor</div>
-            <div class="inst-page-desc">Status em tempo real · atualiza a cada 15s</div>
+            <div class="inst-page-desc">Status em tempo real · atualiza a cada 120s</div>
           </div>
           <div class="monitor-header-right">
             <span class="poll-countdown" id="monitor-countdown"></span>
@@ -4354,7 +4354,7 @@
     /* ─── MONITOR ─── */
     let _monitorPollTimer = null;
     let _monitorCdTimer   = null;
-    let _monitorCdSecs    = 15;
+    let _monitorCdSecs    = 120;
     const _monitorFails   = {};
 
     function _updateMonitorCd() {
@@ -4412,7 +4412,7 @@
         const at = document.getElementById('monitor-checked-at');
         if (at && j.checkedAt) at.textContent = `Última verificação: ${new Date(j.checkedAt).toLocaleString('pt-BR')}`;
 
-        _monitorCdSecs = 15;
+        _monitorCdSecs = 120;
         _updateMonitorCd();
       } catch {
         grid.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Erro ao carregar monitor.</div>`;
@@ -4422,9 +4422,9 @@
     function _startMonitorPoll() {
       clearInterval(_monitorPollTimer);
       clearInterval(_monitorCdTimer);
-      _monitorCdSecs = 15;
+      _monitorCdSecs = 120;
       _updateMonitorCd();
-      _monitorPollTimer = setInterval(loadMonitor, 15000);
+      _monitorPollTimer = setInterval(loadMonitor, 120000);
       _monitorCdTimer   = setInterval(() => {
         _monitorCdSecs = Math.max(0, _monitorCdSecs - 1);
         _updateMonitorCd();
