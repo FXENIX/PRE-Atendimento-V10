@@ -2229,6 +2229,7 @@
       line-height: 1;
       padding: 0;
     }
+    .btn-theme-icon { width:20px; height:20px; object-fit:contain; display:block; }
 
     .btn-theme:active,
     .btn-theme.open {
@@ -2433,7 +2434,7 @@
       <span class="sidebar-theme-label">Tema</span>
       <button class="btn-theme" id="btn-theme-side"
         onclick="toggleTheme()" aria-label="Alternar tema">
-        <span class="btn-theme-icon">🌙</span>
+        <img class="btn-theme-icon" src="/icon-moon.png" alt="Tema" />
       </button>
     </div>
 
@@ -2513,7 +2514,7 @@
         <!-- Botão de tema (alternância direta) -->
         <button class="btn-theme" id="btn-theme-top"
           onclick="toggleTheme()" aria-label="Alternar tema">
-          <span class="btn-theme-icon">🌙</span>
+          <img class="btn-theme-icon" src="/icon-moon.png" alt="Tema" />
         </button>
         <button class="btn-hamburger" onclick="openDrawer()" aria-label="Abrir menu">☰</button>
       </div>
@@ -2961,9 +2962,9 @@
       localStorage.setItem(THEME_KEY, mode);
       document.documentElement.setAttribute('data-theme', mode);
 
-      /* Ícone: lua = escuro, sol = claro */
-      const icon = mode === 'dark' ? '🌙' : '☀️';
-      document.querySelectorAll('.btn-theme-icon').forEach(el => { el.textContent = icon; });
+      /* Tema claro → lua (vai para escuro) | Tema escuro → sol (vai para claro) */
+      const iconSrc = mode === 'dark' ? '/icon-sun.png' : '/icon-moon.png';
+      document.querySelectorAll('.btn-theme-icon').forEach(el => { el.src = iconSrc; });
 
       /* Tooltip acessível no botão */
       const label = mode === 'dark' ? 'Mudar para Claro' : 'Mudar para Escuro';
