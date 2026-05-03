@@ -403,7 +403,7 @@
     </div>
 
     <!-- Título dinâmico -->
-    <div class="page-title" id="page-title">Acesse sua<br/>conta</div>
+    <div class="page-title" id="page-title">Acesse sua conta</div>
     <p class="page-sub" id="page-sub">Gerencie suas instâncias WhatsApp</p>
 
     <!-- Aviso de configuração incompleta -->
@@ -504,7 +504,7 @@
 
       document.getElementById('page-title').innerHTML = isForgot
         ? 'Recuperar<br/>senha'
-        : (currentTab === 'login' ? 'Acesse sua<br/>conta' : 'Crie sua<br/>conta');
+        : (currentTab === 'login' ? 'Acesse sua conta' : 'Crie sua<br/>conta');
       document.getElementById('page-sub').textContent = isForgot
         ? 'Informe seu e-mail para receber o link'
         : (currentTab === 'login' ? 'Gerencie suas instâncias WhatsApp' : 'Preencha os dados para começar');
@@ -578,7 +578,7 @@
       document.getElementById('form-register').style.display = isLogin ? 'none' : '';
 
       document.getElementById('page-title').innerHTML = isLogin
-        ? 'Acesse sua<br/>conta'
+        ? 'Acesse sua conta'
         : 'Crie sua<br/>conta';
       document.getElementById('page-sub').textContent = isLogin
         ? 'Gerencie suas instâncias WhatsApp'
