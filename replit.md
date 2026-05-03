@@ -205,3 +205,56 @@ Executar o projeto:
 - sem alterações estruturais
 - sem substituições automáticas
 - mantendo comportamento original
+
+---
+
+## Regras críticas de banco e autenticação
+
+Este projeto NÃO deve migrar para PostgreSQL do Replit.
+
+Arquitetura oficial do projeto:
+
+- Banco principal: Supabase PostgreSQL
+- Autenticação: Supabase Auth
+- Backend: Node.js / Express
+- Configurações da Evolution API: salvas por tenant no Supabase
+
+É proibido:
+
+- Migrar banco do Supabase para Replit PostgreSQL
+- Usar PostgreSQL interno do Replit
+- Ativar módulo postgresql do Replit
+- Criar DATABASE_URL do Replit
+- Substituir Supabase Auth por autenticação própria
+- Remover Supabase Auth
+- Rodar migrations contra banco local do Replit
+- Criar tabelas locais no Replit
+- Alterar login, cadastro ou reset de senha para banco local
+
+Variáveis obrigatórias:
+
+- SUPABASE_URL
+- SUPABASE_ANON_KEY
+- SUPABASE_SERVICE_ROLE_KEY
+- PUBLIC_APP_URL
+
+Migrations:
+
+- Devem rodar somente contra o Supabase
+- Devem usar SUPABASE_SERVICE_ROLE_KEY
+- Nunca usar DATABASE_URL do Replit
+
+Deploy no Replit:
+
+- Não aceitar sugestão automática de migração para Replit PostgreSQL
+- Não executar plano automático com "Migrate the database from Supabase to Replit's PostgreSQL"
+- Não alterar o auth service para banco local
+- Apenas ajustar workflow/deploy para iniciar o app Node.js corretamente
+
+Resultado esperado:
+
+- Projeto sobe pelo GitHub no Replit
+- Continua usando Supabase como fonte única de verdade
+- Nenhum banco local do Replit é criado
+- Auth continua Supabase Auth
+- Evolution API continua usando configuração por tenant salva no Supabase
